@@ -1,0 +1,27 @@
+set number
+
+set autoread
+
+"set tab 4 chars
+set tabstop=4
+
+"one bakspace del 4 chars
+set softtabstop=4
+
+"<< >> move 4 chars
+set shiftwidth=4
+
+set expandtab
+
+syntax on
+set fileencodings=utf-8,gbk,gb2312
+
+set ambiwidth=double
+set formatoptions=tcqro "注释换行前面自动加星号
+set hlsearch
+"win
+
+"let g:winManagerWindowLayout='FileExplorer|TagList'
+nmap wm :WMToggle<cr>
+
+
