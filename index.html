@@ -1,0 +1,1031 @@
+<!doctype html>
+<html>
+  
+  <head>
+    <title>Documill Visual Search Documentation</title>
+    <link href="style.css" type="text/css"  rel="stylesheet">
+  </head>
+  
+  <body>
+    <h1>Documill Visual Search documentation</h1>
+    <h2 id="contents">Contents</h2>
+
+    <a href="#contents">Contents</a><br>
+    <a href="#introduction">Introduction</a><br>
+    <a href="#components">Components</a><br>
+    <a href="#installation">Installation</a><br>
+    <a href="#integration">Integration</a><br>
+    <a href="#configuration">Configuration</a><br>
+    <a href="#customization">Document Viewer customization</a><br>
+    <a href="#apireference">API reference</a><br>
+    <a href="#internals">DPS Internals</a><br>
+    <a href="#localization">Localization</a><br>
+    <a href="#troubleshooting">Troubleshooting</a><br>
+    <a href="#additional">Additional features</a><br>
+    <a href="#thirdparty">Third party components</a><br>
+    <h2 id="introduction">Introduction</h2>
+
+    <p>Documill Visual Search is a solution for integrating document previewing functionality user interfaces of different enterprise search solutions. It consists of different components working together transforming document files into high fidelity page images and serving them to users via enhanced user interfaces of different enterprise search solutions.
+
+    <h2 id="components">Components</h2>
+
+    <h3>DPS - Documill Preview Server</h3>
+
+    <p>Documill Preview Server (DPS) is a web application that processes documents to images and serves them to the clients. DPS stores the resulting images to preview files cache. Besides processing and serving page images, DPS also provides intra document searche capability and search term highlighting as part of preview page display.
+
+    <p>DPS provides HTTP API for managing the document transformations and for fetching the document previews into the user interface.
+
+    <p>DPS supports generating previews of the following document formats: Microsoft Word (.doc and .docx), Microsoft Powerpoint (.ppt and .pptx) and PDF
+
+    <h3>Documill Document Viewer</h3>
+
+    <p>Documill Document Viewer is a web application for consuming the document content without need to download the document. Document Viewer is implemented with standard web technologies and does not require any external browser plugins.
+
+  <h3>Visual Search Demo</h3>
+
+  <p>Visual Search Demo is a simple example integration. It can be used for verifying that DPS installation is working, and as starting point to see how the components work together.
+    <h2 id="installation">Installation</h2>
+
+    <h3>Requirements</h3>
+
+    <p>Documill Visual Search applications require:
+
+    <ul>
+      <li>Java 1.6 or newer
+      <li>Apache Tomcat 5.5 or newer
+    </ul>
+
+    <h3>Installation to Apache Tomcat</h3>
+
+    <p>DPS and Document Viewer applications are distributed as WAR files (Java web archive). Installation can be done with following steps:
+
+    <ol>
+      <li>Create home directory for DPS application in file system (${dps_home} from now on). Ensure that directory has appropriate permissions so that it is readable and writable for process running Tomcat.</li>
+      <li>Copy dps.license to ${dps_home}/conf/</li>
+      <li>Edit dps.xml bundled with this package to specify absolute filesystem path to the created ${dps_home} directory.</li>
+      <li>Shut down Tomcat if it is running.</li>
+      <li>Copy dps.xml viewer.xml and visualsearch-demo.xml to
+${tomcat_home}/conf/Catalina/localhost/ (If directory does not exist yet, create it)</li>
+      <li>Copy dps.war, viewer.war and visualsearch-demo.war to ${tomcat_home}/webapps/</li>
+      <li>Start up Tomcat</li>
+    </ol>
+
+    <p>Navigate to http://localhost:8080/visualsearch-demo to verify installation was successful.
+
+    <p>See rest of this document and configuration reference for further configuration.
+
+    <h3>Tomcat configuration recommendations</h3>
+
+    <p>It is recommended to give at least 2 gigabytes of memory to Tomcat (preferably more in production environment), and set Java to be run in headless mode.
+
+    <p>In Windows, open Tomcat Manager from icon in toolbar, and set maximum memory in tab "Java". Set headless mode by adding to field "Java Options": -Djava.awt.headless=true
+
+    <p>In Linux, edit (or create if not exist) file ${tomcat_home}/bin/setenv.sh to contain: <code>export JAVA_OPTS="-Xmx2048M -Djava.awt.headless=true"</code>
+where 2048 can be changed to more appropriate value.
+
+    <p>To ensure that non-ascii characters work properly edit ${tomcat_home}/conf/server.xml and add attribute URIEncoding="UTF8" to element &lt;Connector&gt;.
+
+    <h3>Updating</h3>
+
+    <p>Update web-applications hosted in Tomcat with following steps:
+
+    <ol>
+      <li>Shut down Tomcat.</li>
+      <li>Replace the .war file with new version in ${tomcat_home}/webapps.</li>
+      <li>Remove the directory corresponding the .war file within ${tomcat_home}/webapps. For example for dps.war the directory is 'dps'</li>
+      <li>Start up Tomcat</li>
+    </ol>
+
+    <p>Note that if .war file is copied to ${tomcat_home}/webapps directory while Tomcat is running, web application is deployed instantly but the application specific context.xml file at ${tomcat_home}/conf/Catalina/localhost/ is overwritten.
+
+    <h3>Installation: DPS</h3>
+
+    <p>DPS requires home directory where it stores its configuration and cache of preview images and certain metadata about documents. Path to home directory is set by editing dps.xml file described above and setting value for context parameter 'dpsHome'. DPS must be able to read and write to this directory.
+
+    <p>On first startup DPS initializes contents of the dpsHome directory if it is empty. File conf/dps.properties contains default settings for DPS. Settings can be modified according to the user preference and use case.
+
+    <p>DPS requires license file dps.license to be present in ${dpsHome}/conf/ directory during startup to work. It has to be placed there during installation.
+
+    <p>Note: Setting 'fontPath' is very important for visual quality of rendered text in preview images. Value for 'fontPath' should be absolute path to directory where system fonts are located at. The set of fonts should be sufficiently comprehensive, representing those fonts which were used when creating those Microsoft Office documents which now are about to get previewed.
+
+    <h3>Installation: Documill Document Viewer</h3>
+
+    <p>Viewer requires DPS to be installed and running to work.
+
+    <p>All the settings for Viewer are provided as context parameters. To change them, edit viewer.xml file similarly like done with dps.xml earlier. Value for context parameter 'dpsURL' must be set to DPS application's absolute URL as seen by Viewer. For example if Viewer and DPS are running in same Tomcat in port 8080 and DPS is in context /dps, then value of dpsURL should be http://localhost:8080/dps. Parameter 'dpsProxy' must be path to DPS from point of view of client as AJAX calls from client side are made to this URL. For example if DPS is exposed in http://example.com/dps, then this URL should be value of 'dpsProxy'.
+
+    <p>For security it might be desirable that Viewer can only be opened from search view but not by sharing the link. For this reason sessions established and maintained by DPS can be used. Therefore URL of Viewer includes random session id which is used to retrieve page images from DPS. After session expires, thus URL is not usable anymore. To enable this security feature, set DPS to use sessions, and set viewer setting 'onlySession' to true.
+
+    <p>Other options are documented in the viewer.xml file.
+
+<h3>Running multiple DPS instances</h3>
+
+<p>In some use cases it can be desirable to run multiple DPS instance in separate Tomcats, ie. for load balancing purposes. Separate DPS instances must be able to share some state data. For this purpose an external JDBC compatible database can be used.
+
+
+<p>1. First create database and initialize it with command
+
+<pre>
+CREATE TABLE Sessions (sessionID varchar(4000), documentURI varchar(4000),originalURL varchar(4000), expires timestamp);
+</pre>
+
+<p>2. Get JDBC-driver for your database (vendors provide it as downloadable jar-file). Copy the jar file to lib-directory of Tomcat installation.
+
+<p>3.Edit server.xml of Tomcat configuration by adding following element inside GlobalNamingResources-element
+
+<pre>
+&lt;Resource name="jdbc/example" auth="Container"
+          type="javax.sql.DataSource"
+          driverClassName="org.postgresql.Driver"
+          url="jdbc:postgresql://127.0.0.1:5432/sessiondb"
+          username="user" password="pass" maxActive="20" maxIdle="10"
+          maxWait="-1"/&gt;
+</pre>
+
+<p>Change postgresql spesific values to appropriate values for your database. Change "example" in parameter "name" to anything you wish, and use it consistently in rest of configuration as well. Also change username and password to values that allow connecting to db.
+
+<p>4. Edit context.xml of Tomcat configuration by adding following element inside Context-element
+
+<pre>
+&lt;ResourceLink name="jdbc/example"
+              global="jdbc/example"
+              type="javax.sql.DataSource" /&gt;
+</pre>
+
+<p>Change both "jdbc/example" to be same than you set earlier. 
+
+<p>5. Change value of sessionStore in DPS configuration file dps.properties to sessionStore=jdbc/example (with changing "jdbc/example" to your chosen name)
+
+<p>6. Restart DPS. It should now store the session information to your database. If it does not, see if DPS main log contains helpful error messages.
+
+<p>Note: In multiple DPS mode all DPS instances should have been configured to use same home directory.
+
+<p>For sharing the http requests among Tomcat instance running DPS, there should be some external application or http server to do load balancing. For example Apache HTTPD can be used for this purpose, see http://httpd.apache.org/docs/2.2/mod/mod_proxy_balancer.html for more information and configuration help.
+    <h2 id="integration">Integration</h2>
+
+    <p>Integration of Documill Visual Search into an existing search results view is done by including JavaScript and CSS files served by DPS to search results page and using DPS JavaScript API to start preferred document (pre)viewers.
+
+    <p>For each search result there must be a div element with particular attributes. JavaScript client reads necessary information from this element and appends content to it while building the previewer and fetching page previews. For detailed description see section on DPS JavaScript API.
+
+    <p>Note: If DPS application is running on different host and/or port than the user interface application, some reverse proxy mechanism must be used to re-route all the communication between the client side and DPS. This is because most web browsers do not allow cross-host AJAX calls.
+
+    <h2 id="configuration">Configuration</h2>
+
+    <p>Main configuration file dps.properties is located in 'conf' directory inside the directory that was set as dpsHome during installation. If dps.properties didn't exist previously, it was automatically generated with default values during first startup of the application.
+
+    <p>dps.properties is a text file containing key-value pairs following syntax of Java property files. The following parameters are available:
+
+    <table>
+      <tr>
+        <th>Parameter</th>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td colspan="3">Document access parameters:</td>
+      </tr>
+      <tr>
+        <td>checkIfModified</td>
+        <td>true or false</td>
+        <td>If enabled, check that a cached to document has not been modified at the original source. Reprocess any modified documents instead of serving the cached version. For HTTP sources determining if document was modified is made by requesting the document from original source with HTTP header 'If-Modified-Since' with value of previous download time. If content source returns '200' (OK) instead of '304' (Not Modified) document will be reprocessed.</td>
+      </tr>
+      <tr>
+        <td>copyRequestCookies</td>
+        <td>true or false</td>
+        <td>Copy cookies from a client view- or transform-request for the outgoing request for the document.</td>
+      </tr>
+      <tr>
+        <td>defaultCookies</td>
+        <td>string</td>
+        <td>A set of cookies in the standard cookie format. Used in all outgoing requests made by DPS.</td>
+      </tr>
+      <tr>
+        <td>saveOriginalDoc</td>
+        <td>true or false</td>
+        <td>Defines if the original document should be saved in DPS's cache along with the preview images generated from it.</td>
+      </tr>
+      <tr>
+        <td>userAgent</td>
+        <td>string</td>
+        <td>User-Agent string used for outgoing HTTP requests.</td>
+      </tr>
+      <tr>
+        <td>contentProxy</td>
+        <td>url as string</td>
+        <td>URL pointing where DPS should download the content instead of the document URL. Document URL is passed as value for parameter 'url' when downloading.</td>
+      </tr>
+      <tr>
+        <td colspan="3">Session parameters:</td>
+      </tr>
+      <tr>
+        <td>useSession</td>
+        <td>true or false</td>
+        <td>Defines if indirect and expiring references to DPS resources are to be used. If set to false, resource URI returned from view service reveals document location. A session that's not accessed for sessionIdleTime seconds will expire.
+</td>
+      </tr>
+      <tr>
+        <td>sessionIdleTime</td>
+        <td>integer</td>
+        <td>Defines the time, in seconds, when a DPS session should expire after the last time it is accessed. Default is 600s = 10min.</td>
+      </tr>
+      <tr>
+        <td>sessionStore</td>
+        <td>memory</td>
+        <td>The session storage mechanism to use.</td>
+      </tr>
+      <tr>
+        <td>sessionCookie</td>
+        <td>string</td>
+        <td>Name of the cookie DPS can read the user ID from. ID will be used to tie expirable sessions to specific users. If not specified, mappings are not tied to any specific user. Not set by default.</td>
+      </tr>
+      <tr>
+        <td colspan="3">Output parameters:</td>
+      </tr>
+      <tr>
+        <td>outputMode</td>
+        <td>img+img</td>
+        <td>Defines in which format thumbnail and large page image are generated. Other modes (img+svg) besides default (img+img) are at time being experimental.</td>
+      </tr>
+      <tr>
+        <td>pageThumbnailWidth</td>
+        <td>integer</td>
+        <td>Size in terms of width in pixels of the thumbnail preview images generated by DPS.</td>
+      </tr>
+      <tr>
+        <td>zoomedPageWidth</td>
+        <td>integer</td>
+        <td>Size in terms of width in pixels of the large preview images generated by DPS (if other sizes are requested by client, they are created by scaling from this image on server side).</td>
+      </tr>
+      <tr>
+        <td>canvasVisual</td>
+        <td>color, palette16, palette256, gray16, dynamic</td>
+        <td>Defines if color reduction is carried out when preview images are produced. 'color' is full color (24bits/pixel), 'palette16', 'palette256' and 'gray16' use indexed palette of either color or shades of gray. Dynamic mode attempts to choose the best reduction for each rendered document page depending on the content (for example gray16 for pages with only b&w text) but uses palette256 by default. Color reductions increase time of processing documents but produce smaller preview image files. Defaults to 'color' if not set.</td>
+      </tr>
+      <tr>
+        <td>defaultFonts</td>
+        <td>string</td>
+        <td>Comma separated list of font names. The glyph is looked from the fonts in the list if originally used font was not available and no replacement font was found or if selected replacement font does not contain glyph for character. Default fonts are recommended to be set if there are problems with rendering text with non-latin characters. </td>
+      </tr>
+      <tr>
+        <td>useStreamingMode</td>
+        <td>true or false</td>
+        <td>Use default values for forward references to render page as soon as it is finished. If false, forward references are resolved correctly at expense of cpu and memory consumption. Affects to doc and docx documents. Defaults to true.</td>
+      </tr>
+      <tr>
+        <td colspan="3">Other parameters:</td>
+      </tr>
+      <tr>
+        <td>allowedHostForView</td>
+        <td>ip address</td>
+        <td>If set, only this host may access the view- and transform-services.</td>
+      </tr>
+      <tr>
+        <td>archivePreviewContent</td>
+        <td>true or false</td>
+        <td>If enabled, preview content are packed to ZIP archive after transformation finishes. Archive file is written to 'img' directory of document's cache directory and the source content from 'img' is deleted. Defaults to 'false'.</td>
+      </tr>
+      <tr>
+        <td>configMonitorInterval</td>
+        <td>integer</td>
+        <td>Defines time in seconds that is the interval of checking the 'dps.properties' configuration file. If file is noticed to be changed in file system the configuration is updated. Set 0 to disable config monitoring.</td>
+      </tr>
+      <tr>
+        <td>disableTransformationLog</td>
+        <td>true or false</td>
+        <td>Disables writing of transformation spesific log file to cache directory of document. By default log is written with log level specified with parameter 'logLevel'. Defaults to 'false'.</td>
+      </tr>
+      <tr>
+        <td>fontPath</td>
+        <td>file system path as string</td>
+        <td>Path from which DPS searches for fonts needed in the transformations.</td>
+      </tr>
+      <tr>
+        <td>hashCachePaths</td>
+        <td>true or false</td>
+        <td>If enabled, paths in document cache are generated from hash of the document's URL instead of the URL itself. Setting can be used if there is concern that filesystem subdirectory limit could be exceeded. Hashed cache paths will be in form of dpsHome/cache/13b/38e/335/af8c9c1faa12f8082354839/ where used hashing algorithm is MD5. Defaults to 'false'.</td>
+      </tr>
+      <tr>
+        <td>logDir</td>
+        <td>directory path as string</td>
+        <td>Defines path to the directory where DPS will write logging information. If the path is absolute, the path specifies the log directory alone. If the path is relative, it is resolved against DPS home directory. If the path is unspecified, it defaults to 'dpsHome/logs/'.</td>
+      </tr>
+      <tr>
+        <td>logLevel</td>
+        <td>OFF, SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST, ALL</td>
+        <td>Level of logging.</td>
+      </tr>
+      <tr>
+        <td>logPerformance</td>
+        <td>true or false</td>
+        <td>If enabled, DPS writes additional log containing performance metrics about each document transformation. Log is written to DPS log directory with name 'dps_performance.log.x'. Log is in CSV format and contains following columns: timestamp; document URL; mimetype; document size (kb); download time (s); processing time (s); first page ready (s); third page ready (s); total number of pages processed; cache size (kb); end state. Defaults to 'false'. </td>
+      </tr>
+      <tr>
+        <td>workDir</td>
+        <td>directory path as string</td>
+        <td>Defines path to the directory where DPS will store temporary work files. If the path is absolute, the path specifies the work directory alone. If the path is relative, it is resolved against DPS home directory. If the path is unspecified, it defaults to 'dpsHome/work/'.</td>
+      </tr>
+      <tr>
+        <td>maxInputDocumentSize</td>
+        <td>integer</td>
+        <td>Defines maximum size in kilobytes of document that will be handled by DPS. For larger documents previews are not generated. By default document size is not restricted.</td>
+      </tr>
+      <tr>
+        <td>maxTaskTime</td>
+        <td>integer</td>
+        <td>Maximum time in seconds that document transformation is allowed to take. Tasks taking longer are stopped and cancelled. By default transformation time is not restricted.</td>
+      </tr>
+      <tr>
+        <td>maxTasks</td>
+        <td>integer</td>
+        <td>Maximum amount of concurrent tasks of transforming documents to preview images. If more tasks than this specified maximum number of tasks are requested, they are placed in a task queue until there's room for new running task.</td>
+      </tr>
+      <tr>
+        <td>maxTaskReruns</td>
+        <td>integer</td>
+        <td>Maximum amount that transformation can be restarted after being aborted. Transformation is aborted and put back to task queue if a higher priority task needs room to be executed.</td>
+      </tr>
+      <tr>
+        <td>searchProvider</td>
+        <td>lucene, disabled</td>
+        <td>Search provider to use for intra document search. Set to "disabled" to disable intra document search completely (no highlights in UI, no index written into cache). For custom implementation set to name of class implementing PageIndexFactory. Defaults to "lucene".</td>
+      </tr>
+      <tr>
+        <td>serviceContext</td>
+        <td>string</td>
+        <td>Service context, i.e. the path to DPS service requests (do not define host, it is and must be same as for UI webapp). Can be specified if DPS is behind reverseproxy. Affects on output of view service.</td>
+      </tr>
+      <tr>
+        <td>storeWorkingTasks</td>
+        <td>true or false</td>
+        <td>Defines if it is desired to store information about the pending and running tasks on disk. If set true, task queues will be recreated from stored tasks when DPS starts up. This is meant for crash recovery in cases where documents are processed in large batches.</td>
+      </tr>
+    </table>
+
+    <h3>Best practices</h3>
+
+    <p>For best fidelity in page preview image generation it is essential that DPS has access to same fonts that are used in original documents, as Microsoft Office documents do not embed fonts. Setting "fontPath" parameter and making sure there's sufficient selection of fonts is hence important. Without fonts available DPS has to fall back to some default fonts which might differ in metrics from original ones and cause rendering to differ visually from original documents.
+
+    <p>Amount of concurrent tasks is setting that have significant effect on performance of DPS. Each transformation is run on separate Java threads. Too few threads can cause transformations to queue up, and too many can cause memory consumption to grow large as well as cause thread contention. Best value can be found by experimenting, but as a good starting point twice the amount of cores of in available CPUs can be used. So for example for 4 core server, 8-10 can be good initial value.
+
+    <h3>Performance considerations</h3>
+
+    <h4>Memory usage</h4>
+
+    <p>Memory usage can vary a lot depending on the type and content of the documents being processed. Generally it is recommended to give Tomcat hosting DPS at least 2 gigabytes of memory (see "Tomcat configuration recommendations"). If memory has to be set lower or if there are errors indicating out of memory situation, usage can be reduced by setting number of concurrent transformation tasks lower (see configuration parameter "maxTasks"). Basically it can be considered a trade-off between throughput and resource usage.
+
+    <h4>Java version</h4>
+
+    <p>For best performance, the most recent stable Java version is recommended. Some Java implementations (at least Sun/Oracle Java 6 and older) suffer from bugs (eg. <a
+href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6935062">bug 6935062</a>) that can crash the Java virtual machine when graphical operations are performed in multi-processor environments. DPS works around this problem by synchronizing access to various Java API calls that have been seen to cause crashes. This synchronization is by default enabled for Java version 6 and older and disabled for version 7 and newer, unless explicitly configured.
+
+    <p>As not all Java implementations suffer from the mentioned bugs, synchronization policy can be controlled manually. This can be desirable eg. for OpenJDK which uses different native code libraries than Sun/Oracle Java. Synchronization policy can be controlled with following system properties:
+
+    <ul>
+    <li>Mutex.disable=true - Disable all three synchronization locks
+    <li>Mutex.AWT.disable=true - Disable synchronization lock against operations using AWT native library.
+    <li>Mutex.CMM.disable=true - Disable synchronization lock against operations using color management APIs.
+    <li>Mutex.FM.disable=true - Disable synchronization lock against operations using native font manager library.
+    </ul>
+
+    <p>System properties are set by adding them to command that launches Java which runs Tomcat. System properties are prefixed with "-D", for example "-DMutex.disable=true". If manual configuration is used, these three locks default to enabled.
+
+    <h4>Benchmarking processing performance</h4>
+
+    <p>Data about processing times and throughput can be collected by enabling performance log (see parameter 'logPerformance' on configuration). It writes entry for each transformation in CSV format for convenient analysis with external tools such as Excel. Performance log can be useful in evaluating performance impact on different settings, or for making estimates on processing throughput for particular software/hardware configuration.
+<h3>Authentication configuration</h3>
+
+<p>DPS provides several mechanisms for authenticating to document repositories. DPS can be provided with fixed set of credentials as optional configuration files to be used every time it fetches documents from sources that require authentication.
+
+<p>The default credentials for loading documents over HTTP can be given in text file dpsHome/conf/credentials.txt as rows of tabulator separated fields: host, username, password.
+
+<p>Since 3.20 credentials.txt format is changed to json.
+
+<p>Example contents of credentials.txt:
+<pre>
+{
+  "localDomain": "documill.com",
+  "credentials": [
+    {
+      "userName": "testuser",
+      "password": "testpassword",
+      "address": "testiad.documill.com",
+      "interval": 335,
+      "lastChanged": "2012-06-26",
+      "realm": "testiad.documill.com"
+    },
+    {
+      "userName":"testuser2",
+      "password":"testpasswd2",
+      "address":"localhost",
+      "restrictToFQDN":true
+    }
+  ]
+}
+</pre>
+
+
+<p>In the configuration example above:
+
+  <p>"localDomain", the domain which all the short host names are related to. For example if a host identifies itself as a "host" it will be treated as "host.documill.com" in the above configuration. This is most relevant with jcifs / smb which tend to use short host names.
+  <p>"credentials", is an array of credential objects which have three required parameters:
+    <ul>
+      <li>"userName", is the user name for the credentials object.</li>
+      <li>"password", is the password for the credential object.</li>
+      <li>"address", is the address associated with the credentials. This can be a domain which these credentials are associated with. For example if
+this is "documill.com" the credentials will be used for all the hosts
+which are determined to being in the "documill.com" domain and for all
+the sub domains also.</li>
+    </ul>
+
+Additional parameters are:
+
+    <ul>
+      <li>"realm", the LDAP / AD / Kerberos realm for the credentials if they have any. Please use this and plain username in the "userName" field and do not set the realm to the "userName" field.</li>
+      <li>"restrictToFQDN", determines if the credentials will be served only when the fqdn of the host requesting the authentication match the address in the credential object.</li>
+     <li>"interval", is the automatic password changing interval for these credentials. This feature is only supported in Active Directory.</li>
+     <li>"lastChanged", is the parameter associated with the "interval" and it defines when the password of this credential object has been last changed. If not specified but the "interval" is present the application will assume that the "lastChanged" is current date. The format is "yyyy-mm-dd".</li>
+    </ul>
+
+<h4>NTML</h4>
+
+<p>NTLM authentication has different behaviour depending on if it's run on Linux or Windows system due difference in Java implementation. In Linux, NTLM works same way than HTTP Basic as documented above. In Windows Server  with Java 1.6, Java uses credentials of user logged in on Windows and ignores explicitly given credentials. To be able to use NTLM for authenticating in Windows, Tomcat hosting DPS should be run as user with sufficient rights.
+
+<p>In Java 1.7 and Windows Server the behaviour is same as Linux except that the Java will first try the user credentials used to run the Tomcat but if that fails it will try to use specified credentials.
+
+<p>There is a way to supress this behavior and make Java use the specified credentials in the first place.
+
+<p>NOTE! Java 1.7 run under Windows Server has a severe bug. If the host the DPS is trying to contact has any other form of authentication enabled except the NTLM JVM will crash.
+
+<h4>Kerberos / SPNEGO</h4>
+
+<p>Since DPS 3.20 the Kerberos / SPNEGO is supported in a same way as other auth providers except it needs the additional configuration specified below.
+
+<p>If HTTP authentication uses Kerberos additional configuration must be provided to Java as system properties. System properties java.security.krb5.conf and java.security.auth.login.config must point to corresponding configuration files.
+
+<p>In Tomcat, it can be configure followingly (for other application servers consult their respective documentation):
+
+<p>Create file 'krb5.conf' and save it to filesystem. Example of its
+contents (line default_tkt_enctypes disables encoding types that are
+not supported by Active Directory):
+
+<pre>
+[libdefaults]
+default_realm = TESTDOMAIN.DOCUMILL.COM
+default_tkt_enctypes = rc4-hmac des3-cbc-sha1 des-cbc-md5 des-cbc-crc
+[realms]
+TESTDOMAIN.DOCUMILL.COM = {
+kdc = server1.testdomain.documill.com
+}
+</pre>
+
+<p>For further configuration, refer <a href="http://download.oracle.com/javase/6/docs/technotes/guides/net/http-auth.html">Java documentation</a>.
+
+<p>Create file login.conf and save it to filesystem. Example of its contents:
+
+<pre>
+com.sun.security.jgss.krb5.initiate {
+com.sun.security.auth.module.Krb5LoginModule required doNotPrompt=false useTicketCache=true;
+};
+</pre>
+
+<p>If the 'krb5.conf' and 'login.conf' files are placed in dpsHome/conf/, DPS will set up the system properties automatically. If you need to place them elsewhere, add system properties on startup of Tomcat so Java can find the configuration files. One way is to create file 'setenv.sh' in bin/ directory of Tomcat installation. In setenv.sh, following line (if similar line already exists, just append the missing properties to it):
+
+<pre>
+export JAVA_OPTS="-Djava.security.krb5.conf=/tmp/krb5.conf -Djava.security.auth.login.config=/tmp/login.conf -Djavax.security.auth.useSubjectCredsOnly=false"
+</pre>
+
+<p>and replace the paths to conf files with paths where they are located in your system. In Windows, Tomcat Service Manager (on tray) can be used: Edit in tab 'Java' field 'Java Options'.
+
+<p>The Windows Kerberos authentication behaves a bit differently for services and a different configuration is required.
+<br>
+- Either set useTicketCache=false in login.conf
+<br>
+- or set "Use Kerberos DES encryption types for this account" in
+  Active Directory for the account running the Tomcat service
+
+<h4>Authenticating for Windows shares</h4>
+
+<p>Loading documents from Windows shared directories requires that url's are provided to DPS with prefix 'smb' to specify the protocol. The credentials provided in the credentials.txt will work with the smb url's the same way they do for HTTP connections.
+    <h2 id="customization">Document Viewer customization</h2>
+
+    <p>Document Viewer allows customization of its user interface. Customizations are enabled by modifying settings in viewer.xml.
+
+    <p>Enabling 'hideTopBar' hides the top bar. Enabling 'disableSearch' disables intra document search and removes the functionality from user interface. 'faviconURL' allows to set path to favicon. 'customizationCSS' allows to set path to external CSS file for overriding or modifying the default style. Specific use case for 'customizationCSS' is to change the logo in the header bar. 'title' allows to set custom page title.
+
+    <h2 id="apireference">API reference</h2>
+
+    <h3>DPS JavaScript API</h3>
+
+    <p>Documented in <a href="js_api.html">separate document</a>
+
+    <h3>DPS HTTP API</h3>
+
+    <p>DPS provides the following low level HTTP API:
+
+    <h4>View-service</h4>
+
+    <p>Mapped to /view. Returns HTML fragment to be added to container page, or information about the document as JSON string. View-service is called either in server or client side to get initial information about the document needed by JavaScript for starting the previewer building.
+
+    <p>If preview of document is not previously in cache, call to view-service starts preview generation.
+
+    <p>Parameters:
+
+<table>
+  <tr>
+    <th>Parameter</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>url</td>
+    <td>absolute original URL of document (URL encoded) [required]</td>
+  </tr>
+  <tr>
+    <td>src</td>
+    <td>absolute source URL if document should be read from different location, defaults to value of 'url' [optional]</td>
+  </tr>
+  <tr>
+    <td>type</td>
+    <td>type of document either as file suffix or mime type [optional]</td>
+  </tr>
+  <tr>
+    <td>query</td>
+    <td>query string used for page filtering and term highlighting [optional]</td>
+  </tr>
+  <tr>
+    <td>start</td>
+    <td>start page number [optional, default 0 = first page]</td>
+  </tr>
+  <tr>
+    <td>pages</td>
+    <td>max number of pages to show at viewer [optional, default -1 (all)]</td>
+  </tr>
+  <tr>
+    <td>view</td>
+    <td>viewer type to be created or 'json' (information about document as json  string) [optional]</td>
+  </tr>
+  <tr>
+    <td>refresh</td>
+    <td>reconvert document if cached document result is older than x days (number, 0=refresh always)[optional]</td>
+  </tr>
+  <tr>
+    <td>proxy</td>
+    <td>url to DPS from client's point of view [optional]</td>
+  </tr>
+  <tr>
+    <td>delete</td>
+    <td>whether to delete source document after processing has ended. Boolean, defaults to false. Only works when source document is a file in local filesystem [optional]</td>
+  </tr>
+  <tr>
+    <td>priority</td>
+    <td> priority in task queue as integer, default = 0 [optional]</td>
+  </tr>
+  <tr>
+    <td>cut</td>
+    <td>whether DPS should kill lower priority running task if there is no space to start the task immediately. Boolean, defaults to false [optional]</td>
+  </tr>
+  <tr>
+    <td>thumbsOnly</td>
+    <td>if only thumb size images are needed. If document was not in cache yet, only thumb size images are rendered. If parameter is not given and either document was not in cache or only thumb size images were cached, then also large images are rendered. Boolean, defaults to false [optional]</td>
+  </tr>
+  <tr>
+    <td>maxPages</td>
+    <td>maximum number of pages to render to cache. After this limit is reached, the transformation job finishes. Integer, by default all pages are rendered [optional]</td>
+  </tr>
+  <tr>
+    <td>useCacheOnly</td>
+    <td>Use cached content only. If document previews are not in cache, do not try to fetch and process the document, and return HTTP code 404 Not Found instead. Boolean, defaults to false [optional]</td>
+  </tr>
+  <tr>
+    <td>password</td>
+    <td>Password to be used for reading password protected PDF document. For other document types this parameter is ignored. String [optional]</td>
+  </tr>
+</table>
+
+    <p>Parameters query, start and pages are only used for setting up HTML fragment. Parameter proxy affects on "service" and "resourceURI" of the response (see examples below).
+
+    <p>Call to this service returns either JSON string if parameter view has value "json" or HTML fragment otherwise.
+
+    <p>Returned JSON string is of form:
+
+    <pre>
+{
+  "state": transformation state as string, one of INIT,PENDING,CONNECT,DOWNLOAD,CONVERT,READY,FAILED,ABORTED,CANCELLED
+  ,"lastMessage": message as string about transformation state
+  ,"readyPages": amount of pages ready in cache as integer
+  ,"resourceURI": url that client can use to fetch preview images and information of the document
+  ,"contentType": mime type of the document
+  ,"docSuffix": file suffix of the document
+  ,"pageThumbnailWidth": width of thumbnail sized preview image as pixels
+  ,"zoomedPageWidth": width of large sized preview image as pixels
+  ,"httpContentLength": total size of document in bytes
+  ,"httpContentLoaded": amount of bytes loaded so far
+  ,"query": query that was used for intra document search
+  ,"hits": array of pages in which query hit, eg. [1,5]
+}
+    </pre>
+
+    <p>Returned HTML fragment is a div-element with following attributes:
+
+      <table>
+        <tr>
+          <th>Attribute</th>
+          <th>Description</th>
+        </tr>
+        <tr>
+          <td>class</td>
+          <td>always 'dps-viewer'</td>
+        </tr>
+        <tr>
+          <td>service</td>
+          <td> path to dps from client's point of view. If request parameter 'proxy' was used, it is used here, otherwise value of configuration parameter 'serviceContext'. If neither was set, context path of http request is used.</td>
+        </tr>
+        <tr>
+          <td>url</td>
+          <td>Original location of the document</td>
+        </tr>
+        <tr>
+          <td>query</td>
+          <td>request parameter 'query'</td>
+        </tr>
+        <tr>
+          <td>view</td>
+          <td>request parameter 'view'</td>
+        </tr>
+        <tr>
+          <td>start</td>
+          <td>request parameter 'start</td>
+        </tr>
+        <tr>
+          <td>pages</td>
+          <td>request parameter 'pages'</td>
+        </tr>
+        <tr>
+          <td>dps</td>
+          <td>same JSON string that is described above</td>
+        </tr>
+      </table>
+
+    <h4>Transform-service</h4>
+
+    <p>Mapped to /transform. Transforms given URL and saves the result to cache. If document transformation result already exists in cache, transformation is not done again unless parameter 'refresh' is specified. Returns HTTP status code 200 (OK) or 500 (Internal Server Error). This service can be used for pre-populating the cache.
+
+    <p>Service parameters:
+
+    <table>
+      <tr>
+        <th>Parameter</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td>url</td>
+        <td>absolute URL of document (URL encoded) [required]</td>
+      </tr>
+      <tr>
+        <td>src</td>
+        <td>absolute source URL if document should be read from different location, defaults to value of 'url' [optional]</td>
+      </tr>
+      <tr>
+        <td>type</td>
+        <td>type of document either as file suffix or mime type [optional]</td>
+      </tr>
+      <tr>
+        <td>delete</td>
+        <td>whether to delete source document after processing has ended. Boolean, defaults to false. Only works when source document is file in local filesystem [optional]</td>
+      </tr>
+      <tr>
+        <td>priority</td>
+        <td>priority in task queue as integer, default = 0 [optional]</td>
+      </tr>
+      <tr>
+        <td>cut</td>
+        <td>whether DPS should kill lower priority running task if there is no space to start the task immediately. Boolean, defaults to false [optional]</td>
+      </tr>
+      <tr>
+        <td>thumbsOnly</td>
+        <td>if DPS should only render thumb size images to cache. Otherwise also large images are rendered. Boolean, defaults to false [optional]</td>
+      </tr>
+      <tr>
+        <td>maxPages</td>
+        <td>maximum number of pages to render to cache. After this limit is reached, the transformation job finishes. Integer, by default all pages are rendered [optional]</td>
+      </tr>
+      <tr>
+        <td>refresh</td>
+        <td>reconvert document if cached document result is older than x days (number, 0=refresh always)[optional]</td>
+      </tr>
+      <tr>
+        <td>password</td>
+        <td>Password to be used for reading password protected PDF document. For other document types this parameter is ignored. String [optional]</td>
+      </tr>
+    </table>
+
+    <h4>Cache-service and Session-service</h4>
+
+    <p>Mapped to /cache and /session. These servlets provide means to retrieve content from DPS's cache. The difference between them is that with /cache servlet content is identified with its URL as with /session content is identified with expirable session id. In deployment situations where security is needed, /cache servlet should not be visible to client side users, in order to disable fetching previews by crafting the URL.
+
+    <p>The last part of the path specifies what is wanted from given resource. Possible values are:
+
+    <ul>
+      <li>/source - (returns original file, works only if configuration parameter "saveOriginalDoc" is set to true.)
+      <li>/img - (returns raster image for page specified by parameter "page", thumbnail size if no parameter "size" given, otherwise image with width of given size).
+      <li>/page and /zoom - provide HTML-fragment containing link to page preview image and highlights for page of corresponding size: expects parameters "page" (for pagenumber) and "query" (which term to highlight). If optional parameter "lastpage" is also given, returns collection of HTML-fragments as JSON string.
+      <li>/status - (returns status of the document as JSON string. Parameter query can be given to find out amount of pages with search hits in document so far)
+    </ul>
+
+    <p>These two servlets are widely used by Javascript code provided by DPS.
+
+    <h4>Status-service</h4>
+
+    <p>Mapped to /admin/status. Provides services for querying information about running state of DPS. Returns information as JSON string. If no parameters are given the response is form of
+
+<pre>
+{
+  "tasksRunningNumber":1,
+  "tasksPendingNumber":0
+}
+</pre>
+
+<p>If optional parameter 'detailed' is given, service returns detailed report as JSON string in form of
+
+<pre>
+{
+  "tasksRunningNumber":1,
+  "tasksPendingNumber":0,
+  "tasksRunningUris":[http://example.com/example.pdf],
+  "tasksPendingUris":[]
+}
+</pre>
+
+<p>'tasksRunningNumber' is number of tasks currently running. 'tasksPendingNumber' is number of tasks waiting in task queue. 'tasksRunningUris' is array of URIs of tasks currently running. 'tasksPendingUris' is array of URIs of tasks waiting in task queue.
+
+<p>If optional parameter 'statistics' is given, JSON response contains additional object, such as
+
+<pre>
+{
+  ...
+  "cumulativeStatistics":{
+    "documents":5,
+    "finished":4,
+    "failed":1,
+    "pages":20,
+    "time":10,
+    "cacheSize":920,
+    "timePerPage":0.5
+  }
+}
+</pre>
+
+<p>Values in object 'cumulativeStatistics' describe cumulative results processed documents.
+'documents' is number of documents processed.
+'finished' is number of successfully finished documents.
+'failed' is number of failed documents.
+'pages' is total number of pages of successfully processed documents.
+'time' is total time in seconds spent for successfully processed documents.
+'cacheSize' is size of cache in kilobytes.
+'timePerPage' is average time spent per page in seconds.
+
+<p>Note that 'statistics' give statistics only for those tasks which where processed after the bookkeeping was started. Statistic calculation is persisted to file 'stats.json' in DPS work directory, so it can be reseted by deleting the file when Tomcat is down.
+
+    <h4>Health-service</h4>
+
+<p>Mapped to /admin/health. Health-service can be used for health check. If DPS is considered healthy, output is
+
+<pre>
+{
+  "healthy":true
+}
+</pre>
+
+Otherwise output is
+
+<pre>
+{
+  "healthy":false,
+  "reason":"Explanation what is wrong in process."
+}
+</pre>
+
+<p>Example use case of health-check is to automate restart on error situations, eg. when DPS transformation processes are stuck.
+
+    <h4>CacheManager-service</h4>
+
+    <p>Mapped to /admin/cachemanager. Provides services for managing document entries in disk cache. Choose service by parameter 'action'. Supported values are 'getdocumentstatus','removedocumententry', 'getdocumentlog', 'getdocumentcachepath' and 'startcachejob'.
+
+    <p>'getdocumentstatus' takes parameter 'url' which value should be original URL of document. It returns document status as JSON string in same format than view-service, or HTTP status code 404 (Not found) if there was no entry for given URL in cache.
+
+    <p>'removedocumententry' takes parameter 'url' which value should be original URL of document. If document entry for given URL exists in cache, it is removed. Otherwise HTTP status code 404 (Not found) is returned.
+
+    <p>'getdocumentlog' takes parameter 'url' which value should be original URL of document. If document entry for given URL exists in cache, its transformation log is returned. Otherwise HTTP status code 404 (Not found) is returned.
+
+    <p>'startcachejob' starts background task which traverses through disk cache. Parameter "task" defines task type (either "analyze" or "cleanup"). Analyze task writes to log the status of the cache but doesn't make any changes. Cleanup task removes all the entries from cache which are older than value for parameter "expirytime" (integer in days).
+
+    <p>'getdocumentcachepath' takes parameter 'url' which should be original URL of the document. If document entry for given URL exists in cache, the absolute file system path of the cache directory is returned. Otherwise HTTP status code 404 (Not found) is returned.
+
+    <h4>Info-service</h4>
+
+    <p>Mapped to /info. Provides information about the runtime environment and troubleshooting help. Info-service detects some common configuration errors and warns about them.
+
+   <p>With parameter 'memory', output contains detailed information about memory usage of the Java virtual machine running Tomcat.
+  <h4>PDF-converter service</h4>
+
+  <p>Mapped to /pdfconverter. Converts a document found at the given URL and returns the resulting PDF document or progress information about the conversion task. This service supports converting DOC(X) and PPT(X) into PDF. Note that unlike other transformations, results of this service are not stored to filesystem cache indefinitely. This service is used asynchronously: Status should be polled until it declares the transformation ready. Then produced PDF can be fetched.
+
+  <p>Parameters:
+
+  <table>
+    <tr>
+      <th>Parameter</th>
+      <th>Description</th>
+    </tr>
+    <tr>
+      <td>url</td>
+      <td>Absolute URL of document (URL encoded) to be converted. Document is fetched from this url before conversion starts. [required]</td>
+    </tr>
+    <tr>
+      <td>responsetype</td>
+      <td>Defines the expected type of response to the request. Possible values are "json" and "pdf". If "json", then status of the conversion is returned as JSON string. If "pdf" and status indicates conversion is finished, then resulting PDF document is returned. If "pdf" but conversion is not finished or it failed then http status 400 (Bad request) is returned. Defaults to "json" if not specified. [optional]</td>
+    </tr>
+  </table>
+
+  <p>Returned JSON-status is of form:
+
+  <pre>
+{
+  "document": URL of the document
+  ,"state": State of conversion, see possible values below
+}
+  </pre>
+
+  <p>Possible values for "state" in JSON-status response:
+
+  <pre>
+"ADDED" - document was added to be converted
+"PENDING" - document is waiting in processing queue
+"FETCHING" - document is being downloaded from the source
+"WORKING" - conversion is under way
+"FINISHED" - conversion finished successfully
+"FAILED" - conversion failed
+  </pre>
+    <h2 id="internals">DPS Internals</h2>
+
+    <p>This section contains information about internal workings of DPS that might be useful for various integration situations.
+
+    <h3>Transformation job management</h3>
+
+    <p>DPS transforms documents to previews in dedicated threads. Amount of concurrent transformations are set with configuration parameter. If DPS is asked to transform document when there is already maximum number of transformations running, the new transformation is added to job queue and executed once there is room for new transformation. By default jobs are executed from queue by first in first out basis.
+
+    <p>Transform- and View-services allow setting job priorities as parameters. These priorities are taken into account in job queue. The default priority is 0 and jobs with the highest priority will be executed first. For several jobs with same priority, oldest is executed first. Another parameter, 'cut', tells if lowest priority running job should be cancelled to make room for next item in queue. Canceled job is put back into job queue with its original priority. Parameter 'cut' has effect only if the new job has higher priority than the lowest priority running job.
+
+    <p>Job priorities can be used for example if it is desired that on-demand transformations get processed faster than those running to pre-warm the cache.
+
+    <h3>Preview cache</h3>
+
+    <p>When document is processed the produced previews are stored in preview cache, which typically is a hierarchical directory structure somewhere in the file system. Preview cache location is defined in DPS home as subdirectory 'cache'. Entries for documents are in subdirectories with path derived from the URL of original location of the document.
+
+    <p>Contents of the document cache directory are
+
+    <ul>
+      <li>doc.properties - metadata about document and the status of the transformation, a plain text file in format of Java properties file
+      <li>transformer.log - document specific transformation log
+      <li>index - directory containing mini index used for intra-document searches
+      <li>img - directory containing preview images of two sizes (thumb and high resolution), and coordinates for each word in pages used for highlighting (.terms files)
+    </ul>
+
+    <p>Even though there are only two sizes of images of each page stored in cache, arbitrary sized images can be requested through DPS HTTP API. Other sizes are scaled on demand from the large size image on server side. These other sizes are not stored in cache.
+
+    <h4>Document specific metadata</h4>
+
+    <p>doc.properties file contains information that is used internally by DPS and some of it is passed to client side JavaScript needed for presenting the previewer. Metadata can also be useful for cleaning up the cache entries.
+    
+    <p>Entries found in dps.properties are explained in below table. Note that the times are in milliseconds as returned by Java's System.currentTimeMillis method.
+
+    <table>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td>lastAccess</td>
+        <td>long (time in ms)</td>
+        <td>Previous time document was previewed</td>
+      </tr>
+      <tr>
+        <td>startTime</td>
+        <td>long (time in ms)</td>
+        <td>Time when transformation was started</td>
+      </tr>
+      <tr>
+        <td>accesses</td>
+        <td>integer</td>
+        <td>Times document has been previewed</td>
+      </tr>
+      <tr>
+        <td>state</td>
+        <td>INIT, PENDING, CONNECT, DOWNLOAD, CONVERT, READY, FAILED, CANCELLED, ABORTED</td>
+        <td>Current state of the transformation</td>
+
+      </tr>
+      <tr>
+        <td>readyPages</td>
+        <td>integer</td>
+        <td>amount of pages transformed so far</td>
+      </tr>
+      <tr>
+        <td>contentType</td>
+        <td>string</td>
+        <td>MIME-type of the document</td>
+      </tr>
+      <tr>
+        <td>dpsVersion</td>
+        <td>string</td>
+        <td>Version of DPS that rendered this cache entry</td>
+      </tr>
+      <tr>
+        <td>lastMessage</td>
+        <td>string</td>
+        <td>Message giving more information about current status</td>
+      </tr>
+      <tr>
+        <td>thumbSize</td>
+        <td>integer</td>
+        <td>Width of the thumbnail size image in cache</td>
+      </tr>
+      <tr>
+        <td>largeSize</td>
+        <td>integer</td>
+        <td>Width of the large size image in cache</td>
+      </tr>
+    </table>
+
+    <h3>Document source control</h3>
+
+    <p>By default DPS tries to download each document for transformation from its URL (pointed by parameter 'url' in view- and transform-services). There are two ways to override this behavior.
+
+    <p>If configuration parameter 'contentProxy' is set, downloading is done through it with original document URL as value for parameter 'url'. For <b></b>example if 'contentProxy' is set to http://localhost:1234/get, then DPS tries to download file from http://localhost:1234/get?url=originalurl, where original URL is the original URL of the document as properly encoded for parameter use.
+
+    <p>If request parameter 'src' is given on call to transform- or view-services, document is attempted to download from URL that is value of 'src'. If 'src' is given then 'contentProxy' is not used.
+
+    <p>These source control mechanisms can be used to enable DPS to access content sources that it couldn't otherwise access.
+
+    <h3>Securing the cache</h3>
+
+    <p>DPS provides mechanism to allow users to view only previews of documents that they are allowed to. To secure the installation, users (in this context clients) should not have direct access to view-service and setting 'useSession' should be on. View-service should be called server side for the document URL if the caller has determined that the user is allowed to see the document. DPS now creates a 128-bit random id that maps to document URL and returns it among the response. Client side JavaScript can now fetch the document previews using this random id. Configuration setting 'sessionIdleTime' determines the life time of such a mapping.
+
+    <p>For added security the mapping can be tied to specific user. User id is read from the cookie on call to view-service and stored into mapping. When user fetches content from the preview cache, the user id from cookie is read again and compared to one associated with mapping to decide if the user can see it. Configuration parameter 'sessionCookie' sets the name of the cookie that DPS attempts to read.
+
+    <p>Besides view-service, also the cache-service should be blocked from client side access in secure installation, as it allows fetching the content from cache by crafting an URL.
+
+    <p>Do note that traffic between the client and the server running DPS should use HTTPS to mitigate attacks where the attacker could try to steal cookie and mapping and then use them to fetch previews.
+
+    <h3>Logging</h3>
+
+    <p>DPS writes the global application log to its subdirectory logs within DPS home. Log files names are of form dps.log.X, where X is a number. Amount of logging is controlled with configuration parameter 'logLevel'. To discard any informational and debug messages from being logged, set logLevel to WARNING. This logs only exceptional situations and errors.
+
+    <p>A document specific transformation log is written to cache directory of each document. This can help to trace why some document could not be successfully transformed. Document specific log can be disabled with configuration parameter 'disableTransformationLog'.
+
+    <h3>Task recovery</h3>
+
+    <p>DPS maintains the job queue in memory. If DPS is shut down either on purpose or unexpectly when there are still tasks on queue, the queue would be lost. Configuration parameter 'storeWorkingTasks' turns on recovery feature which writes to disk enough information about running and pending tasks so that task queue can be recreated on startup to same state that it was before shutdown.
+
+    <p>DPS marks the recovered tasks which were running on time of shutdown. If they are also found on next startup, the documents are logged and corresponding task is not recovered second time. This allows to track down culprit in case that processing of certain document causes DPS or underlying Java Virtual Machine to crash.
+
+   <p>Disclaimer: Task recovery is not guaranteed to work over version upgrades. When upgrading DPS to new version, either wait until task processing has ended, or delete the recovery data from DPS work directory.
+    <h2 id="localization">Localization</h2>
+
+    <p>Localization of Documill Visual Search is documented in <a href="localization.html">separate document</a>.
+
+  <h2 id="additional">Additional features</h2>
+
+  <p>Documill offers additional functionality for special requirements. The extra features integrate to Visual Search but are licensed separately. Currently following packages are offered (available for evaluation on the Visual Search download page):
+
+  <p><b>Documill Content Protector</b> - Solution for protecting page images served by DPS by adding visible watermarks and hidden data to images identifying the user who made the request.
+  <p><b>Documill Advanced Font Processing Engine</b> - Solution for enhancing font processing capabilities of DPS. Adds intelligence on choosing the visually best matching font when original font used in document is not available.
+    <h2 id="troubleshooting">Troubleshooting</h2>
+
+    <p>For troubleshooting see <a href="faq.html">Frequently Asked Questions document</a>.
+
+    <h2 id="thirdparty">Third party components</h2>
+
+    <p>Documill Visual Search applications use components from the following projects:
+
+    <ul>
+      <li>Apache Commons Logging (see <a
+href="../lib/licenses/apache-license-2.0.txt">apache-license-2.0.txt</a>)
+      <li>Apache Lucene (see <a href="../lib/licenses/apache-license-2.0.txt">apache-license-2.0.txt</a>)
+      <li>Apache Taglibs (see <a href="../lib/licenses/apache-license-2.0.txt">apache-license-2.0.txt</a>)
+      <li>iText (version 2.1.7, see <a href="../lib/licenses/iText-2.1.7-license.txt">iText-2.1.7-license.txt</a>)
+      <li>JAI (see <a href="../lib/licenses/LICENSE-jai.txt">LICENSE-jai.txt</a>, <a href="../lib/licenses/COPYRIGHT-jai.txt">COPYRIGHT-jai.txt</a> and <a href="../lib/licenses/THIRDPARTYLICENSEREADME-jai.txt">THIRDPARTYLICENSEREADME-jai.txt</a>)
+      <li>JPedal JBIG2 (see <a href="../lib/licenses/bsd-license-jbig2.txt">bsd-license-jbig2.txt</a>)
+      <li>jcifs (see <a href="../lib/licenses/lgpl-2.1.txt">lgpl-2.1.txt</a>)
+      <li>jj2000 (see  <a href="../lib/licenses/lgpl-3.0.txt">lgpl-3.0.txt</a>)
+      <li>json-simple (see <a href="../lib/licenses/apache-license-2.0.txt">apache-license-2.0.txt</a>)
+      <li>jQuery (see <a href="../lib/licenses/MIT-license-jquery.txt">MIT-license.txt</a>)
+      <li>jQuery UI (see <a href="../lib/licenses/MIT-license-jqueryui.txt">MIT-license.txt</a>)
+      <li>jQuery mousewheel (see <a href="https://github.com/brandonaaron/jquery-mousewheel/blob/master/LICENSE.txt">license</a>)
+      <li>log4j (see <a href="../lib/licenses/apache-license-2.0.txt">apache-license-2.0.txt</a>)
+      <li>Woodstox (see <a href="../lib/licenses/apache-license-2.0.txt">apache-license-2.0.txt</a>)
+    </ul>
+
+    <p>Bundled jj2000 library contains modifications. Modified source code of jj2000 library available upon request.
+  </body>
+</html>
