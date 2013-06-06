@@ -12,3 +12,16 @@ export HISTCONTROL=$HISTCONTROL${HISTCONTROL+,}ignoredups
 #alias 
 alias ..='cd ../'
 alias ...='cd ../../'
+alias diff='diff -u'
+alias ll='ls -lhtr'
+alias mv="mv -i"
+alias cp="cp -i"
+
+#function
+function mgrep() {
+    if [ -n "$2" ] ;then
+        grep --color --include=$2 -n -w "$1" -r *
+    else
+        grep --color -n -w "$1" -r *
+    fi
+}
