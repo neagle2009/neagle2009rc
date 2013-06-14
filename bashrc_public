@@ -2,7 +2,6 @@ if [ -d ${HOME}/bin ] ; then
     PATH=${HOME}/bin:"${PATH}"
 fi
 
-
 #cd 自动纠错
 shopt -s cdspell
 
@@ -25,3 +24,8 @@ function mgrep() {
         grep --color -n -w "$1" -r *
     fi
 }
+
+function bak() {
+    cp $1 ${1}.bak.`date +"%Y%m%d%H%M%S"`
+}
+
