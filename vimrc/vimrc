@@ -16,7 +16,7 @@ set expandtab
 "
 "use twice withd of ASCII char
 set ambiwidth=double
-"set formatoptions=tcqro "注释换行前面自动加星号
+set formatoptions=tcqro "注释换行前面自动加星号
 
 set fileencodings=utf-8,cp936,GB2312,GBK,GB18030
 syntax on
@@ -28,9 +28,9 @@ map <S-Right> :tabn<CR>
 
 
 "插件部分
-au FileType php setlocal dict+=/home/acer/.vim/dict/php_func.list.txt
-autocmd FileType php set keywordprg=pman
-let g:ackprg="<custom-ack-path-goes-here> -H --nocolor --nogroup --column"
+"au FileType php setlocal dict+=/home/acer/.vim/dict/php_func.list.txt
+"autocmd FileType php set keywordprg=pman
+"let g:ackprg="<custom-ack-path-goes-here> -H --nocolor --nogroup --column"
 
 "let g:winManagerWindowLayout='FileExplorer|TagList'
 "nmap wm :WMToggle<cr>
