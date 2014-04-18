@@ -63,10 +63,11 @@ alias cp="cp -i"
 
 #function
 function mgrep() {
-    if [ -n "$2" ] ;then
-        grep --color --include="$2" -n -w "$1" -r *
-    else
-        grep --color -n -w "$1" -r *
+    path=${3:-$PWD}
+    if [ -n "$2" ]; then
+        sudo grep --color -n -w "$1" --include="$2" -r "$path"
+    else 
+        sudo grep --color -n -w "$1" -r "$path"
     fi
 }
 
