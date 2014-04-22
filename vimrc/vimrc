@@ -18,6 +18,9 @@ set expandtab
 set ambiwidth=double
 set formatoptions=tcqro "注释换行前面自动加星号
 
+"high line cursor line  set cul  set nocul
+set cursorline
+
 set fileencodings=utf-8,cp936,GB2312,GBK,GB18030
 syntax on
 color desert
