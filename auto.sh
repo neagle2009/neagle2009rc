@@ -23,4 +23,4 @@ if [ -d "${hideBinDir}" ] ;then
     mkdir "${hideBinDir}"
 fi
 
-cp -r "${dir}/plugin" "${vimdir}/plugin"
+cp -r "${dir}/vimrc/plugin" "${vimdir}/plugin"
