@@ -1,2 +1,31 @@
-ctags
-cdargs
+#! /bin/bash
+
+softwareList="ctags cdargs"
+installList="/usr/bin/apt-get /usr/bin/yum"
+installCmd=""
+
+for cmd in $installList
+do
+    if [ -x "$cmd" ]; then
+        installCmd=$cmd
+    fi
+done
+
+## method 1
+#if [ ! -n "$installCmd" ]; then
+#    echo "Not set install cmd"
+#    exit
+#fi
+
+## method 2
+#echo ${installCmd:?"Not set install comand"} > /dev/null
+
+## method 3
+: ${installCmd:?"Not set install comand"}
+
+for software in $softwareList
+do
+    #echo y | sudo $installCmd install $software
+    echo "echo y | sudo ${installCmd} install ${software}"
+done
+
