@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /bin/bash
 
 zipfile="master.zip"
 wget -O "${zipfile}" -c 'https://github.com/neagle2009/neagle2009rc/archive/master.zip' || exit
@@ -12,9 +12,9 @@ unzip "${zipfile}"
 dir="neagle2009rc-master"
 cat ${dir}/bashrc_public >> ~/.bashrc
 cat ${dir}/vimrc/vimrc >> ~/.vimrc
-
 vimdir="$HOME/.vim"
-if [ ! -d $vimdir ] ;then
+
+if [ ! -d "$vimdir" ] ;then
     mkdir "${vimdir}"
 fi
 
@@ -24,3 +24,7 @@ if [ -d "${hideBinDir}" ] ;then
 fi
 
 cp -r "${dir}/vimrc/plugin" "${vimdir}/plugin"
+
+# del 
+rm -rf "${dir}"
+rm "$0"
