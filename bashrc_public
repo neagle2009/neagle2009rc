@@ -76,7 +76,13 @@ function mgrep() {
 }
 
 function bak() {
-    cp $1 ${1}.bak.`date +"%Y%m%d%H%M%S"`
+    if [ -f "$1" ]; then
+        cp "$1" ${1}.bak.`date +"%Y%m%d%H%M%S"`
+    elif [ -d "$1" ]; then
+        cp -r "$1" ${1}.bak.`date +"%Y%m%d%H%M%S"`
+    else
+        echo "sorry, only support file and dir"
+    fi
 }
 
 function psg() {
