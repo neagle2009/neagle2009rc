@@ -69,9 +69,15 @@ alias cp="cp -i"
 function mgrep() {
     path=${3:-$PWD}
     if [ -n "$2" ]; then
-        sudo grep --color -n -w "$1" --include="$2" -r "$path"
+        word="$1"
+        inc="$2"
+        shift
+        shift
+        sudo grep --color -n -w "${word}" --include="${inc}" -r "$path"
     else 
-        sudo grep --color -n -w "$1" -r "$path"
+        word="$1"
+        shift
+        sudo grep --color -n -w "${word}" -r "$path"
     fi
 }
 
