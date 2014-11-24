@@ -1,3 +1,5 @@
+##########################
+######## neagle2009@gmail.com ##################
 ##
 ### set a fancy prompt (non-color, unless we know we "want" color)
 ##case "$TERM" in
