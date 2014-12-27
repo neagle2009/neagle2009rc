@@ -1,3 +1,6 @@
+"""""""""""""
+"""" neagle2009@gmail.com 
+
 "显示行号
 set number
 "当文件被更改时自动reload
