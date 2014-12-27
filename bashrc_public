@@ -43,9 +43,15 @@ if [ -x /usr/bin/dircolors ]; then
     alias egrep='egrep --color=auto'
 fi
 
-if [ -d ${HOME}/bin ] ; then
-    PATH=${HOME}/bin:"${PATH}"
-fi
+needInPath="
+$HOME/bin
+"
+for p in $needInPath
+do
+    if [ -d "$p" ] ; then
+        PATH="$p:${PATH}"
+    fi
+done
 
 if [ -f $HOME/.bin/cdargs-bash.sh ] ;then
     source $HOME/.bin/cdargs-bash.sh
