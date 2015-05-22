@@ -102,3 +102,15 @@ function bak() {
 function psg() {
     ps -ef | grep "$@"
 }
+
+function mpgrep() {
+    word="$1"
+    path=${2:-$PWD}
+    sudo grep --color -n -w "${word}" --include="*.php" -r "$path"
+}
+
+function mppgrep() {
+    word="$1"
+    path=${2:-$PWD}
+    sudo grep --color -n "${word}" --include="*.php" -r "$path"
+}
