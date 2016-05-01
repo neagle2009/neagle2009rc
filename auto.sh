@@ -28,3 +28,7 @@ cp -r "${dir}/vimrc/plugin" "${vimdir}/plugin"
 # del 
 rm -rf "${dir}"
 rm "$0"
+
+##download cdargs
+wget -c 'https://github.com/cbxbiker61/cdargs/archive/master.zip'
+wget -c 'http://neagle.qiniudn.com/neagle/2014/11/29/cdargs-bash.sh'
