@@ -12,6 +12,11 @@ unzip "${zipfile}"
 dir="neagle2009rc-master"
 cat ${dir}/bashrc_public >> ~/.bashrc
 cat ${dir}/vimrc/vimrc >> ~/.vimrc
+colorFile="$HMOE/.dircolors"
+if [ ! -f "${colorFile}" ] ;then
+    cat ${dir}/dir_colors >> ${colorFile}
+fi
+
 vimdir="$HOME/.vim"
 
 if [ ! -d "$vimdir" ] ;then
