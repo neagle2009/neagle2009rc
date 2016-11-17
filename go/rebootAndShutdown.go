@@ -62,14 +62,14 @@ func showMenu(w http.ResponseWriter, r *http.Request) {
 func reboot(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("<h1>rebooting... </h1>"))
 	fmt.Println("reboot time:\t", time.Now().Format(DATETIME_TEMPLATE))
-	cmd := exec.Command("/usr/bin/sudo", "/sbin/init", "0")
+	cmd := exec.Command("/usr/bin/sudo", "/sbin/init", "6")
 	cmd.Run()
 }
 
 func shutdown(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("<h1>shutdown .... </h1>"))
 	fmt.Println("shutdown time:\t", time.Now().Format(DATETIME_TEMPLATE))
-	cmd := exec.Command("/usr/bin/sudo", "/sbin/init", "6")
+	cmd := exec.Command("/usr/bin/sudo", "/sbin/init", "0")
 	cmd.Run()
 }
 
