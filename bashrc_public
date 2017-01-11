@@ -75,6 +75,12 @@ function mpgrep() {
     sudo grep --color -n -w "${word}" --include="*.php" -r "$path"
 }
 
+function impgrep() {
+    word="$1"
+    path=${2:-$PWD}
+    sudo grep -i --color -n -w "${word}" --include="*.php" -r "$path"
+}
+
 function mppgrep() {
     word="$1"
     path=${2:-$PWD}
