@@ -82,7 +82,7 @@ func downChannel() {
 }
 
 func logOut(s string) {
-    log.Printf("%+v\t%s\n", time.Now().Format("2014-10-24 10:24:00"), s)
+    log.Printf("%+v\t%s\n", time.Now().Format("2006-01-02 15:04:05"), s)
 }
 
 func main() {
