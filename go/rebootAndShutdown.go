@@ -10,10 +10,11 @@ import (
 	"time"
 )
 
-const DATETIME_TEMPLATE = "2008-08-08 08:08:08"
+const DATETIME_TEMPLATE = "2006-01-02 15:04:05"
 
 func body() string {
     return  `
+<html>
 <head>
 <title>Hi</title>
 <style type="text/css">
@@ -90,5 +91,4 @@ func main() {
 	http.HandleFunc("/reboot", reboot)
 	http.HandleFunc("/showMenu", showMenu)
 	http.ListenAndServe(":8888", nil)
-	//testExample()
 }
