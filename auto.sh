@@ -60,4 +60,4 @@ wget -c 'http://neagle.qiniudn.com/neagle/2014/11/29/cdargs-bash.sh'
 
 wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | sh
 test -f /bin/zsh && chsh -s /bin/zsh
-echo 'ZSH_THEME="amuse" ' >> ~/.zsh
+cp -r "${neaglerc2009Dir}/zshrc" $HOME/.zshrc
