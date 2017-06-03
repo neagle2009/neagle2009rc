@@ -67,7 +67,7 @@ function installVundle() {
 
 getOnlinFile
 installConfigFile
-installZsh
+#installZsh
 downloadCdargs
 installVundle
 
